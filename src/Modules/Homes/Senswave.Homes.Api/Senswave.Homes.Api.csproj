@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Configurations>Debug;Release;Tests</Configurations>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Asp.Versioning.Http" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Shared\Senswave.Abstractions\Senswave.Abstractions.csproj" />
+		<ProjectReference Include="..\..\..\Shared\Senswave.Infrastructure\Senswave.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\Shared\Senswave.Infrastructure.Web\Senswave.Infrastructure.Web.csproj" />
+		<ProjectReference Include="..\Senswave.Homes.Application\Senswave.Homes.Application.csproj" />
+		<ProjectReference Include="..\Senswave.Homes.Domain\Senswave.Homes.Domain.csproj" />
+		<ProjectReference Include="..\Senswave.Homes.Infrastructure\Senswave.Homes.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>

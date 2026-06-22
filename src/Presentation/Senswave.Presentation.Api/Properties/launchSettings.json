@@ -1,0 +1,53 @@
+{
+  "profiles": {
+    "Single Deployment - Local Development": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Smtp__Enabled": "true",
+        "Smtp__Port": "6065",
+
+        "PostgreSql__ErrorDetail": "true",
+        "PostgreSql__Port": "5432",
+
+        "MessageBus__Type": "InMemory",
+
+        "Diagnostics__OpenTelemetry__Enabled": "true",
+        "Diagnostics__Health__Port": "5001",
+
+        "Modules__Users__Sender__ConfirmationUrl": "http://localhost:7070/api/v2/auth/confirmEmail",
+        "Modules__Users__Sender__ResetUrl": "http://api-dev.senswave.net/resetPassword",
+        "Modules__Users__ConfirmEmailV2__SuccessRedirect": "http://senswave.net/account/confirmation?status=success",
+        "Modules__Users__ConfirmEmailV2__FailureRedirect": "http://senswave.net/account/confirmation?status=failure"
+      },
+      "dotnetRunMessages": true,
+      "launchUrl": "http://localhost:8080/swagger",
+      "applicationUrl": "http://localhost:5001;http://localhost:8080;"
+    },
+    "Cluster Deployment - Development": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Diagnostics__Health__Port": "5001",
+        "Diagnostics__OpenTelemetry__Enabled": "true",
+
+        "MessageBus__Type": "RabbitMq",
+
+        "Modules__DataSource__Brokers__IsCluster": "true",
+        "Modules__Users__Sender__ConfirmationUrl": "http://localhost:7070/api/v2/auth/confirmEmail",
+        "Modules__Users__Sender__ResetUrl": "http://api-dev.senswave.net/resetPassword",
+
+        "Modules__Users__ConfirmEmailV2__SuccessRedirect": "http://senswave.net/account/confirmation?status=success",
+        "Modules__Users__ConfirmEmailV2__FailureRedirect": "http://senswave.net/account/confirmation?status=failure",
+
+        "PostgreSql__ErrorDetail": "true",
+        "Smtp__Enabled": "true"
+      },
+      "dotnetRunMessages": true,
+      "launchUrl": "http://localhost:8080/swagger",
+      "applicationUrl": "http://localhost:5001;http://localhost:8080;"
+    }
+  }
+}

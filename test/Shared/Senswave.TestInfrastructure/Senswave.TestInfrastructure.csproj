@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Configurations>Debug;Release;Tests</Configurations>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MassTransit" />
+		<PackageReference Include="MassTransit.RabbitMQ" />
+		<PackageReference Include="Moq" />
+		<PackageReference Include="MQTTnet" />
+		<PackageReference Include="Testcontainers" />
+		<PackageReference Include="Testcontainers.PostgreSql" />
+		<PackageReference Include="Testcontainers.RabbitMq" />
+		<PackageReference Include="xunit" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="xunit.runner.visualstudio">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\src\Presentation\Senswave.Presentation.Api\Senswave.Api.csproj" />
+	  <ProjectReference Include="..\..\..\src\Shared\Senswave.Infrastructure\Senswave.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Fixtures\Mqtt\Mosquitto\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Fixtures\Mqtt\Mosquitto\Dockerfile">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Fixtures\Mqtt\Mosquitto\mosquitto.conf">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Fixtures\Mqtt\Mosquitto\pwfile">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+</Project>

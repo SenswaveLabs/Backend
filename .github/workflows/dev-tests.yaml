@@ -1,0 +1,295 @@
+name: Dev - Run Tests 🧪
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Senswave
+        run: dotnet restore ./Senswave.sln
+
+      - name: Build Senswave
+        run: dotnet build ./Senswave.sln --no-restore --configuration Release
+
+      - name: Run Unit Tests
+        run: dotnet test --no-build --configuration Release --filter "Collection=UnitTests" --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Run Architecture Tests
+        run: dotnet test --no-build --configuration Release --filter "Collection=ArchitectureTests" --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Cache Unit Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-unit-${{ github.run_id }}
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Senswave
+        run: dotnet restore ./Senswave.sln
+
+      - name: Build Senswave
+        run: dotnet build ./Senswave.sln --no-restore --configuration Release
+
+      - name: Run Integration Tests
+        run: dotnet test --no-build --configuration Release --filter "Collection=IntegrationTests" --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Run MQTT Integration Tests
+        run: dotnet test --no-build --configuration Release --filter "Collection=MqttIntegrationTests" --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Cache Integration Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-integration-${{ github.run_id }}
+
+  end:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Senswave
+        run: dotnet restore ./Senswave.sln
+
+      - name: Build Senswave
+        run: dotnet build ./Senswave.sln --no-restore --configuration Release
+
+      - name: Run End Tests
+        run: dotnet test --no-build --configuration Release --filter "Collection=EndTest" --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Cache End Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-end-${{ github.run_id }}
+
+  mqtt-end:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Senswave
+        run: dotnet restore ./Senswave.sln
+
+      - name: Build Senswave
+        run: dotnet build ./Senswave.sln --no-restore --configuration Release
+
+      - name: Run MQTT End Tests
+        run: dotnet test --no-build --configuration Release --filter "Collection=MqttEndTest" --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Upload MQTT End Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mqtt-end-test-logs
+          path: "**/bin/Release/net*/logs/*.txt"
+          retention-days: 3
+
+      - name: Cache MQTT End Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-mqtt-end-${{ github.run_id }}
+
+  limits-end:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Senswave
+        run: dotnet restore ./Senswave.sln
+
+      - name: Build Senswave
+        run: dotnet build ./Senswave.sln --no-restore --configuration Release
+
+      - name: Run Limits End Tests
+        run: dotnet test --no-build --configuration Release --filter "Collection=LimitsEndTests" --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Cache Limits End Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-limits-end-${{ github.run_id }}
+
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            **/bin
+            **/obj
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-dotnet-
+
+      - name: Create env file
+        working-directory: docker
+        run: cp .env.template .env
+
+      - name: Drop volumes (clean environment)
+        run: docker volume prune -f
+
+      - name: Build images
+        working-directory: docker
+        run: docker compose build --no-cache
+
+      - name: Start containers
+        working-directory: docker
+        run: docker compose up -d
+
+      - name: Wait for seed to complete
+        run: |
+          timeout=60
+          interval=5
+          elapsed=0
+
+          while true; do
+            logs=$(docker logs Senswave.Seed 2>&1)
+
+            if echo "$logs" | grep -q "Initial seed finished successfully."; then
+              echo "✅ Initial seed finished successfully."
+              break
+            elif echo "$logs" | grep -E "Initial seed finished with"; then
+              echo "❌ Initial seed finished with errors."
+              echo "$logs"
+              exit 1
+            fi
+
+            sleep $interval
+            elapsed=$((elapsed + interval))
+
+            if [ "$elapsed" -ge "$timeout" ]; then
+              echo "❌ Timed out waiting for seed to complete."
+              echo "🔍 Final logs:"
+              echo "$logs"
+              exit 1
+            fi
+          done
+
+      - name: Show logs
+        if: always()
+        run: |
+          echo "📜 Logs from Senswave.Api:"
+          docker logs Senswave.Api || true
+
+          echo "📜 Logs from Senswave.Seed:"
+          docker logs Senswave.Seed || true
+
+          echo "📜 Logs from Senswave.DataSource.Worker:"
+          docker logs Senswave.DataSource.Worker || true
+
+
+      - name: Teardown containers
+        working-directory: docker
+        if: always()
+        run: docker compose down --volumes
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: [unit, integration, end, mqtt-end, limits-end]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Unit Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-unit-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-testresults-unit-
+
+      - name: Restore Integration Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-integration-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-testresults-integration-
+
+      - name: Restore End Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-end-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-testresults-end-
+
+      - name: Restore MQTT End Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-mqtt-end-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-testresults-mqtt-end-
+
+      - name: Restore Limits End Test Results
+        uses: actions/cache@v4
+        with:
+          path: TestResults
+          key: ${{ runner.os }}-testresults-limits-end-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-testresults-limits-end-
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: List Test Results
+        continue-on-error: true
+        run: ls -R TestResults
+
+      - name: Generate Coverage Report
+        continue-on-error: true
+        run: reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:"Html;Badges;TextSummary" -classfilters:"-*.Migrations.*" -assemblyfilters:"-*.EndTests;-Senswave.TestInfrastructure"
+
+      - name: Display Coverage Summary
+        continue-on-error: true
+        run: cat coveragereport/Summary.txt
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: coverage-report
+          path: coveragereport
+          retention-days: 1
+          

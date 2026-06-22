@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Configurations>Debug;Release;Tests</Configurations>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AspNetCore.HealthChecks.SignalR" />
+		<PackageReference Include="MassTransit" />
+		<PackageReference Include="SignalRSwaggerGen" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Shared\Senswave.Abstractions\Senswave.Abstractions.csproj" />
+		<ProjectReference Include="..\..\..\Shared\Senswave.Infrastructure\Senswave.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\Shared\Senswave.Integration\Senswave.Integration.csproj" />
+	</ItemGroup>
+
+</Project>

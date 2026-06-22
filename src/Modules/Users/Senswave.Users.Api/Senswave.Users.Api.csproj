@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Configurations>Debug;Release;Tests</Configurations>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Asp.Versioning.Http" />
+		<PackageReference Include="Google.Apis.Auth" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Shared\Senswave.Abstractions\Senswave.Abstractions.csproj" />
+		<ProjectReference Include="..\..\..\Shared\Senswave.Infrastructure\Senswave.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\Shared\Senswave.Infrastructure.Web\Senswave.Infrastructure.Web.csproj" />
+		<ProjectReference Include="..\Senswave.Users.Application\Senswave.Users.Application.csproj" />
+		<ProjectReference Include="..\Senswave.Users.Domain\Senswave.Users.Domain.csproj" />
+		<ProjectReference Include="..\Senswave.Users.Infrastructure\Senswave.Users.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>

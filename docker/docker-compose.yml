@@ -1,0 +1,164 @@
+name: senswave
+
+services:
+  senswave.api:
+    build:
+      context: ../
+      dockerfile: src/Presentation/Senswave.Presentation.Api/Dockerfile
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION}
+        BUILD_IMAGE_CONFIGURATION: ${BUILD_IMAGE_CONFIGURATION}
+    container_name: Senswave.Api
+    hostname: api
+    networks:
+      - senswave_network
+    volumes: 
+      - api-https:/https/
+      - api-log:/app/logs
+    ports:
+     - ${API_HTTP_PORT}:8080
+     - ${API_HEALTH_PORT}:5001
+    env_file:
+    - .env
+    depends_on:
+      senswave.database:
+        condition: service_healthy
+        restart: true
+      senswave.messagebus:
+        condition: service_healthy
+        restart: true
+      senswave.datasource.worker:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://api:5001/api/health | grep -q '\"status\":\"Healthy\"'"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
+      start_period: 5s
+
+  senswave.datasource.worker:
+    build:
+      context: ../
+      dockerfile: src/Presentation/Senswave.Presentation.DataSource.Worker/Dockerfile
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION}
+        BUILD_IMAGE_CONFIGURATION: ${BUILD_IMAGE_CONFIGURATION}
+    container_name: Senswave.DataSource.Worker
+    hostname: datasource-worker
+    networks:
+      - senswave_network
+    volumes:
+      - datasource-worker-log:/app/logs
+    env_file:
+    - .env
+    depends_on:
+      senswave.messagebus:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://datasource-worker:5001/api/health | grep -q '\"status\":\"Healthy\"'"]
+      interval: 2s
+      timeout: 1s
+      retries: 5
+      start_period: 3s
+
+  senswave.database:
+    image: postgres:17.6
+    container_name: Senswave.Database
+    hostname: database
+    ports:
+      - ${DATABASE_PORT}:5432
+    networks:
+      - senswave_network
+    volumes:
+      - database-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${PostgreSql__Database}
+      - POSTGRES_USER=${PostgreSql__Username}
+      - POSTGRES_PASSWORD=${PostgreSql__Password}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${PostgreSql__Database}", "-U", "${PostgreSql__Username}"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+
+  senswave.messagebus:
+    image: rabbitmq:4.1.3-management
+    container_name: Senswave.MessageBus
+    hostname: messagebus
+    ports:
+      - ${MESSAGEBUS_AMQP_PORT}:5672
+      - ${MESSAGEBUS_MANAGEMENT_PORT}:15672
+    networks:
+      - senswave_network
+    volumes:
+      - messagebus-data:/var/lib/rabbitmq
+      - messagebus-log:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${MessageBus__RabbitMq__Username}
+      - RABBITMQ_DEFAULT_PASS=${MessageBus__RabbitMq__Password}
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+
+  senswave.telemetry:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: Senswave.Telemetry
+    hostname: telemetry
+    ports:
+      - ${TELEMETRY_OTLP_HTTP_PORT}:18888
+      - ${TELEMETRY_OTLP_GRPC_PORT}:18889
+    networks:
+      - senswave_network
+
+  senswave.mail:
+      image: rnwood/smtp4dev
+      container_name: Senswave.Smtp
+      hostname: smtp
+      ports:
+        - ${SMTP_UI}:80
+        - ${SMTP_EXTERNAL}:25
+      networks:
+        - senswave_network
+      environment:
+        - ServerOptions__Port=${Smtp__Port}
+
+  senswave.seed:
+    build:
+        context: ../
+        dockerfile: src/Presentation/Senswave.Presentation.Seed/Dockerfile
+        args:
+            BUILD_CONFIGURATION: ${BUILD_CONFIGURATION}
+    container_name: Senswave.Seed
+    hostname: seed
+    networks:
+        - senswave_network
+    env_file: 
+        - .env
+    depends_on:
+        senswave.api:
+          condition: service_healthy
+      
+networks:
+  senswave_network:
+    name: 'senswave-network'
+    ipam:
+      config:
+        - subnet: 192.168.193.0/24
+
+volumes:
+  messagebus-data:
+    driver: local
+  messagebus-log:
+    driver: local
+  database-data:
+    driver: local
+  api-https:
+    driver: local
+  api-log:
+    driver: local
+  datasource-worker-log:
+    driver: local

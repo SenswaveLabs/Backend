@@ -1,0 +1,59 @@
+﻿using Senswave.Devices.Domain.Operations.Types.Characteristics.Range;
+
+namespace Senswave.Devices.UnitTests.Operations.Types.IntegerOperation;
+
+[Trait("Collection", "UnitTests")]
+public class RangeCharacteristicTests : BaseIntegerTest
+{
+    [Fact]
+    public async Task CorrectRangeReturned()
+    {
+        //Arrange
+        var operationEntity = RangedOperation;
+
+        //Act
+        var operatinImplementation = factory.Create(operationEntity);
+        var operation = operatinImplementation.Data as IRangeCharacteristic;
+        var result = await operation!.GetDisplayRange();
+
+        //Assert
+        Assert.Equal(operationEntity.Configuration["min"]!.ToString(), result.Data["min"]!.ToString());
+        Assert.Equal(operationEntity.Configuration["max"]!.ToString(), result.Data["max"]!.ToString());
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(15)]
+    [InlineData(20)]
+    public async Task ValidStepValue(int step)
+    {
+        //Arrange
+        var operationEntity = RangedOperation;
+
+        //Act
+        var operatinImplementation = factory.Create(operationEntity);
+        var operation = operatinImplementation.Data as IRangeCharacteristic;
+        var result = await operation!.ValidateStep(step);
+
+        //Assert
+        Assert.True(result.IsSuccess);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(-20)]
+    public async Task InvalidStepValue(int step)
+    {
+        //Arrange
+        var operationEntity = RangedOperation;
+
+        //Act
+        var operatinImplementation = factory.Create(operationEntity);
+        var operation = operatinImplementation.Data as IRangeCharacteristic;
+        var result = await operation!.ValidateStep(step);
+
+        //Assert
+        Assert.False(result.IsSuccess);
+    }
+}

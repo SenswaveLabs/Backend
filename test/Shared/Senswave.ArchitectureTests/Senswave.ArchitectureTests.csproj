@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Configurations>Debug;Release;Tests</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MQTTnet" />
+    <PackageReference Include="NetArchTest.Rules" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Modules\DataSource\Senswave.DataSources.Api\Senswave.DataSources.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\DataSource\Senswave.DataSources.Application\Senswave.DataSources.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\DataSource\Senswave.DataSources.Domain\Senswave.DataSources.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\DataSource\Senswave.DataSources.Infrastructure\Senswave.DataSources.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Devices\Senswave.Devices.Api\Senswave.Devices.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Devices\Senswave.Devices.Application\Senswave.Devices.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Devices\Senswave.Devices.Domain\Senswave.Devices.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Devices\Senswave.Devices.Infrastructure\Senswave.Devices.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Homes\Senswave.Homes.Api\Senswave.Homes.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Homes\Senswave.Homes.Application\Senswave.Homes.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Homes\Senswave.Homes.Domain\Senswave.Homes.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Homes\Senswave.Homes.Infrastructure\Senswave.Homes.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Users\Senswave.Users.Api\Senswave.Users.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Users\Senswave.Users.Domain\Senswave.Users.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Presentation\Senswave.Presentation.Api\Senswave.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\Senswave.Integration\Senswave.Integration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

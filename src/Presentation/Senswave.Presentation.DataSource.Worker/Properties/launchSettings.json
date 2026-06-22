@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Cluster Deployment - Worker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "Diagnostics__Health__Port": "7001"
+      },
+      "launchBrowser": true,
+      "dotnetRunMessages": true,
+      "launchUrl": "http://localhost:7070/swagger",
+      "applicationUrl": "http://localhost:7001;http://localhost:7070;"
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json"
+}

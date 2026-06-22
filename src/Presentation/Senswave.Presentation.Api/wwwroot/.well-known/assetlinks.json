@@ -1,0 +1,12 @@
+[
+  {
+    "relation": [ "delegate_permission/common.handle_all_urls" ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.develite.senswave",
+      "sha256_cert_fingerprints": [
+        "69:03:F3:26:9C:1D:C4:86:46:65:79:CD:8B:89:EE:55:83:12:7A:2B:C7:46:B9:14:5D:57:09:A6:00:19:06:91"
+      ]
+    }
+  }
+]

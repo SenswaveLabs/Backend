@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>30dfb4b6-6ef1-4324-b790-ceef4107cf85</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Asp.Versioning.Http" />
+		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.MassTransit" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Process" />
+		<PackageReference Include="Serilog.Extensions.Hosting" />
+		<PackageReference Include="Serilog.Formatting.Compact" />
+		<PackageReference Include="Serilog.Settings.Configuration" />
+		<PackageReference Include="Serilog.Sinks.Console" />
+		<PackageReference Include="Serilog.Sinks.File" />
+		<PackageReference Include="Serilog.Sinks.OpenTelemetry" />
+		<PackageReference Include="Serilog.Enrichers.Context" />
+		<PackageReference Include="Serilog.Enrichers.Span" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Modules\DataSource\Senswave.DataSources.BrokerConnection\Senswave.DataSources.BrokerConnection.csproj" />
+		<ProjectReference Include="..\..\Shared\Senswave.Abstractions\Senswave.Abstractions.csproj" />
+		<ProjectReference Include="..\..\Shared\Senswave.Infrastructure.Web\Senswave.Infrastructure.Web.csproj" />
+		<ProjectReference Include="..\..\Shared\Senswave.Infrastructure\Senswave.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>
