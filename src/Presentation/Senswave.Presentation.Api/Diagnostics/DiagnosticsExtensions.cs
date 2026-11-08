@@ -3,7 +3,9 @@ using MassTransit.Logging;
 using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Senswave.Abstractions.Transport;
 using Senswave.DataSources.Api;
 using Senswave.Infrastructure;
 using Senswave.Infrastructure.Diagnostics.OpenTelemetry;
@@ -16,6 +18,8 @@ namespace Senswave.Api.Diagnostics;
 
 public static class DiagnosticsExtensions
 {
+    public const string TransportAttributeName = "senswave.transport";
+
     public static IServiceCollection AddDiagnostics(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHealth(configuration);
@@ -26,9 +30,15 @@ public static class DiagnosticsExtensions
         if (!options.Enabled)
             return services;
 
+        var transport = TransportOptions.FromConfiguration(configuration);
+
         services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddAttributes(
+            [
+                new KeyValuePair<string, object>(TransportAttributeName, transport.Mode.ToString())
+            ]))
             .WithTracing(x => x
-                .SetSampler(new AlwaysOnSampler())
+                .SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(options.TraceSamplingRatio)))
                 .AddSource(InfrastructureModule.DefaultListenerName)
                 .AddSource(DataSourcesModule.DefaultListenerName)
                 .AddSource(LiveUpdatesModule.DefaultListenerName)
@@ -58,20 +68,28 @@ public static class DiagnosticsExtensions
                     };
                 })
                 .AddHttpClientInstrumentation()
+                .AddGrpcClientInstrumentation()
                 .AddEntityFrameworkCoreInstrumentation()
                 .AddSqlClientInstrumentation()
                 .AddNpgsql()
                 .AddOtlpExporter()
-            ).WithMetrics(x => x
-                .AddNpgsqlInstrumentation()
-                .AddAspNetCoreInstrumentation()
-                .AddHttpClientInstrumentation()
-                .AddSqlClientInstrumentation()
-                .AddRuntimeInstrumentation()
-                .AddProcessInstrumentation()
-                .AddMeter(Telemetry.SmtpClient.MeterName)
-                .AddOtlpExporter()
-            );
+            ).WithMetrics(x =>
+            {
+                x.AddNpgsqlInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddSqlClientInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddProcessInstrumentation()
+                    .AddMeter(Telemetry.SmtpClient.MeterName);
+
+                if (options.LatencyHistogramBoundaries.Length > 0)
+                    x.AddView("http.server.request.duration",
+                        new ExplicitBucketHistogramConfiguration { Boundaries = options.LatencyHistogramBoundaries });
+
+                x.AddOtlpExporter((_, reader) =>
+                    reader.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = options.MetricExportIntervalSeconds * 1000);
+            });
 
         return services;
     }
